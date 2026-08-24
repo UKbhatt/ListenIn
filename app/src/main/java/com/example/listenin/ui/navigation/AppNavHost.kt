@@ -29,14 +29,7 @@ fun AppNavHost() {
         }
 
         composable(AppScreen.Landing.route) {
-            LandingScreen(
-                onGetStartedClick = {
-                    // hook for next screen later
-                },
-                onDemoClick = {
-                    // hook for demo actions later
-                }
-            )
+            LandingScreen()
         }
     }
 }

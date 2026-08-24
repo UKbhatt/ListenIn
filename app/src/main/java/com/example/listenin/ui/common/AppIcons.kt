@@ -3,6 +3,8 @@ package com.example.listenin.ui.common
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,6 +19,8 @@ import com.example.listenin.ui.theme.AppColors
  */
 object AppIcons {
     val Headphones: ImageVector = Icons.Filled.Headphones
+    val Video: ImageVector = Icons.Filled.Videocam
+    val Audio: ImageVector = Icons.Filled.MusicNote
 }
 
 /**
