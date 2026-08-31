@@ -44,7 +44,6 @@ fun GenericScaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             floatingActionButton = floatingActionButton ?: {},
             floatingActionButtonPosition = floatingActionButtonPosition,
-            // Status bar inset is already handled by the outer Box; avoid doubling it here.
             contentWindowInsets = WindowInsets(0.dp),
             modifier = Modifier
         ) { scaffoldPadding ->
