@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.example.listenin.data.MediaType
 import com.example.listenin.ui.landing.LandingScreen
 import com.example.listenin.ui.medialist.MediaListScreen
+import com.example.listenin.ui.player.PlayerScreen
 import com.example.listenin.ui.splash.SplashScreen
 
 sealed class AppScreen(val route: String) {
@@ -16,6 +17,9 @@ sealed class AppScreen(val route: String) {
     data object Landing : AppScreen("landing")
     data object MediaList : AppScreen("media_list/{type}") {
         fun createRoute(type: MediaType) = "media_list/${type.route}"
+    }
+    data object Player : AppScreen("player/{type}/{id}") {
+        fun createRoute(type: MediaType, id: Long) = "player/${type.route}/$id"
     }
 }
 
@@ -48,6 +52,22 @@ fun AppNavHost() {
             val mediaType = MediaType.fromRoute(backStackEntry.arguments?.getString("type"))
             MediaListScreen(
                 type = mediaType,
+                onBack = { navController.popBackStack() },
+                onItemClick = { item ->
+                    navController.navigate(AppScreen.Player.createRoute(item.type, item.id))
+                }
+            )
+        }
+        composable(
+            route = AppScreen.Player.route,
+            arguments = listOf(
+                navArgument("type") { type = NavType.StringType },
+                navArgument("id") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            PlayerScreen(
+                type = MediaType.fromRoute(backStackEntry.arguments?.getString("type")),
+                id = backStackEntry.arguments?.getLong("id") ?: 0L,
                 onBack = { navController.popBackStack() }
             )
         }

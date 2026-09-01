@@ -8,24 +8,43 @@ import kotlinx.coroutines.withContext
 
 object MediaRepository {
 
+    private data class Spec(
+        val collection: android.net.Uri,
+        val titleColumn: String,
+        val subtitleColumn: String
+    )
+
+    private fun spec(type: MediaType): Spec = when (type) {
+        MediaType.AUDIO -> Spec(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            MediaStore.Audio.Media.TITLE,
+            MediaStore.Audio.Media.ARTIST
+        )
+        MediaType.VIDEO -> Spec(
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            MediaStore.Video.Media.DISPLAY_NAME,
+            MediaStore.Video.Media.RESOLUTION
+        )
+    }
+
     suspend fun loadMedia(context: Context, type: MediaType): List<MediaItem> =
         withContext(Dispatchers.IO) {
-            when (type) {
-                MediaType.AUDIO -> query(
-                    context = context,
-                    type = type,
-                    collection = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    titleColumn = MediaStore.Audio.Media.TITLE,
-                    subtitleColumn = MediaStore.Audio.Media.ARTIST
-                )
-                MediaType.VIDEO -> query(
-                    context = context,
-                    type = type,
-                    collection = MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                    titleColumn = MediaStore.Video.Media.DISPLAY_NAME,
-                    subtitleColumn = MediaStore.Video.Media.RESOLUTION
-                )
-            }
+            val spec = spec(type)
+            query(context, type, spec.collection, spec.titleColumn, spec.subtitleColumn)
+        }
+
+    suspend fun loadItem(context: Context, type: MediaType, id: Long): MediaItem? =
+        withContext(Dispatchers.IO) {
+            val spec = spec(type)
+            query(
+                context = context,
+                type = type,
+                collection = spec.collection,
+                titleColumn = spec.titleColumn,
+                subtitleColumn = spec.subtitleColumn,
+                selection = "${MediaStore.MediaColumns._ID} = ?",
+                selectionArgs = arrayOf(id.toString())
+            ).firstOrNull()
         }
 
     private fun query(
@@ -33,7 +52,9 @@ object MediaRepository {
         type: MediaType,
         collection: android.net.Uri,
         titleColumn: String,
-        subtitleColumn: String
+        subtitleColumn: String,
+        selection: String? = null,
+        selectionArgs: Array<String>? = null
     ): List<MediaItem> {
         val projection = arrayOf(
             MediaStore.MediaColumns._ID,
@@ -46,7 +67,7 @@ object MediaRepository {
         val sortOrder = "${MediaStore.MediaColumns.DATE_ADDED} DESC"
 
         val items = mutableListOf<MediaItem>()
-        context.contentResolver.query(collection, projection, null, null, sortOrder)?.use { cursor ->
+        context.contentResolver.query(collection, projection, selection, selectionArgs, sortOrder)?.use { cursor ->
             val idCol = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
             val titleCol = cursor.getColumnIndex(titleColumn)
             val subtitleCol = cursor.getColumnIndex(subtitleColumn)
